@@ -13,24 +13,22 @@ class BookController extends Controller
     {
         $query = Book::query();
 
-        // Search functionality
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('title', 'like', "%{$search}%")
-                  ->orWhere('author', 'like', "%{$search}%");
+                ->orWhere('author', 'like', "%{$search}%");
         }
 
-        // Category filter
         if ($request->has('category') && $request->category) {
             $query->where('category_id', $request->category);
         }
 
-        // Status filter
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
 
-        $books = $query->with('category')->paginate(8); // Changed to 8 for 2 rows of 4 books
+        $books = $query->with('category')->paginate(16);
+
         $categories = Category::all();
 
         return view('books.index', compact('books', 'categories'));

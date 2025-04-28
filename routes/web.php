@@ -27,7 +27,7 @@ Route::post('/password/reset', '\App\Http\Controllers\Auth\ResetPasswordControll
 // Protected routes (require authentication)
 Route::middleware('auth')->group(function () {
     // Dashboard
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    // Route::get('/home', [HomeController::class, 'index'])->name('home');
 
     // Books - accessible to all authenticated users
     Route::get('/books', [BookController::class, 'index'])->name('books.index');

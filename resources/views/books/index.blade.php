@@ -43,36 +43,38 @@
 
         <div class="book-grid">
             @forelse($books as $book)
-                <div class="book-card card">
+                <div class="book-card card {{ $book->status === 'available' ? 'available' : 'borrowed' }}">
                     <div class="card-body">
                         <h5 class="book-title">{{ $book->title }}</h5>
                         <p class="book-author">by {{ $book->author }}</p>
-                        
+
                         <div class="book-meta">
                             <p class="mb-1"><i class="far fa-calendar-alt"></i> {{ $book->publication_year }}</p>
                             <p class="mb-2"><i class="fas fa-bookmark"></i> {{ $book->category->name }}</p>
-                            
-                            @if($book->status === 'available')
-                                <span class="badge bg-success status-badge">Available</span>
-                            @else
-                                <span class="badge bg-danger status-badge">Borrowed</span>
-                            @endif
                         </div>
                     </div>
-                    
-                    <div class="card-footer text-center">
-                        <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-action">View</a>
 
-                        @if(Auth::user()->role === 'admin')
-                            <a href="{{ route('books.edit', $book) }}" class="btn btn-warning btn-action">Edit</a>
-                            <form action="{{ route('books.destroy', $book) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-action" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
-                            </form>
-                        @elseif($book->status === 'available')
-                            <a href="{{ route('borrows.createWithBook', $book) }}" class="btn btn-success btn-action">Borrow</a>
+                    <div class="card-footer text-center">
+                        @if($book->status === 'available')
+                            <span class="badge bg-success status-badge mb-2 d-block">Available</span>
+                        @else
+                            <span class="badge bg-danger status-badge mb-2 d-block">Borrowed</span>
                         @endif
+
+                        <div class="mt-2">
+                            <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-action">View</a>
+
+                            @if(Auth::user()->role === 'admin')
+                                <a href="{{ route('books.edit', $book) }}" class="btn btn-warning btn-action">Edit</a>
+                                <form action="{{ route('books.destroy', $book) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-action" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
+                                </form>
+                            @elseif($book->status === 'available')
+                                <a href="{{ route('borrows.createWithBook', $book) }}" class="btn btn-success btn-action">Borrow</a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @empty
