@@ -7,9 +7,26 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('books.update', $book) }}" method="POST">
+            <form action="{{ route('books.update', $book) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+
+                @if($book->image_path)
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div>
+                            <img src="{{ asset('storage/' . $book->image_path) }}" alt="{{ $book->title }}" style="max-width: 200px; height: auto;" class="img-thumbnail">
+                        </div>
+                    </div>
+                @endif
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Update Book Cover Image</label>
+                    <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 <div class="mb-3">
                     <label for="title" class="form-label">Title</label>

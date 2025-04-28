@@ -9,46 +9,78 @@
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-striped borrow-table">
                     <thead>
                         <tr>
                             @if(Auth::user()->role === 'admin')
-                                <th>User</th>
+                                <th><i class="fas fa-user"></i> User</th>
                             @endif
-                            <th>Book</th>
-                            <th>Author</th>
-                            <th>Borrow Date</th>
-                            <th>Expected Return</th>
-                            <th>Actual Return</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th colspan="2"><i class="fas fa-book"></i> Book Details</th>
+                            <th><i class="far fa-calendar"></i> Borrow Date</th>
+                            <th><i class="far fa-calendar-check"></i> Expected Return</th>
+                            <th><i class="far fa-calendar-times"></i> Actual Return</th>
+                            <th><i class="fas fa-info-circle"></i> Status</th>
+                            <th><i class="fas fa-tasks"></i> Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($borrows as $borrow)
-                            <tr>
+                            <tr class="borrow-row {{ !$borrow->actual_return_date && $borrow->expected_return_date < now() ? 'overdue' : '' }} {{ $borrow->actual_return_date ? 'returned' : '' }}">
                                 @if(Auth::user()->role === 'admin')
                                     <td>{{ $borrow->user->name }}</td>
                                 @endif
-                                <td>{{ $borrow->book->title }}</td>
-                                <td>{{ $borrow->book->author }}</td>
-                                <td>{{ $borrow->borrow_date->format('Y-m-d') }}</td>
-                                <td>{{ $borrow->expected_return_date->format('Y-m-d') }}</td>
-                                <td>{{ $borrow->actual_return_date ? $borrow->actual_return_date->format('Y-m-d') : '-' }}</td>
+                                <td colspan="2">
+                                    <div class="book-title-cell">
+                                        <span>{{ $borrow->book->title }}</span>
+                                        <span class="author">by {{ $borrow->book->author }}</span>
+                                    </div>
+                                </td>
+                                <td class="date-cell">
+                                    <i class="far fa-calendar-alt text-muted"></i>
+                                    {{ $borrow->borrow_date->format('Y-m-d') }}
+                                </td>
+                                <td class="date-cell">
+                                    <i class="far fa-calendar-check {{ !$borrow->actual_return_date && $borrow->expected_return_date < now() ? 'text-danger' : 'text-muted' }}"></i>
+                                    {{ $borrow->expected_return_date->format('Y-m-d') }}
+                                    @if(!$borrow->actual_return_date)
+                                        @php
+                                            $daysLeft = now()->diffInDays($borrow->expected_return_date, false);
+                                        @endphp
+                                        <div class="time-indicator {{ $daysLeft < 0 ? 'urgent' : ($daysLeft <= 3 ? 'warning' : '') }}">
+                                            @if($daysLeft < 0)
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                {{ abs($daysLeft) }} days overdue
+                                            @elseif($daysLeft === 0)
+                                                <i class="fas fa-clock"></i>
+                                                Due today
+                                            @else
+                                                <i class="fas fa-hourglass-half"></i>
+                                                {{ $daysLeft }} days left
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="date-cell">
+                                    <i class="far fa-calendar-times {{ $borrow->actual_return_date ? 'text-success' : 'text-muted' }}"></i>
+                                    {{ $borrow->actual_return_date ? $borrow->actual_return_date->format('Y-m-d') : '-' }}
+                                </td>
                                 <td>
                                     @if($borrow->actual_return_date)
-                                        <span class="badge bg-success">Returned</span>
+                                        <span class="borrow-status returned">Returned</span>
                                     @elseif($borrow->expected_return_date < now())
-                                        <span class="badge bg-danger">Overdue</span>
+                                        <span class="borrow-status overdue">Overdue</span>
                                     @else
-                                        <span class="badge bg-primary">Borrowed</span>
+                                        <span class="borrow-status borrowed">Borrowed</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if(!$borrow->actual_return_date && (Auth::user()->role === 'admin' || $borrow->user_id === Auth::id()))
                                         <form action="{{ route('borrows.return', $borrow) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-success">Return Book</button>
+                                            <button type="submit" class="return-button">
+                                                <span>Return Book</span>
+                                                <span>📚</span>
+                                            </button>
                                         </form>
                                     @else
                                         -

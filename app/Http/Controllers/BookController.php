@@ -30,7 +30,7 @@ class BookController extends Controller
             $query->where('status', $request->status);
         }
 
-        $books = $query->with('category')->paginate(10);
+        $books = $query->with('category')->paginate(8); // Changed to 8 for 2 rows of 4 books
         $categories = Category::all();
 
         return view('books.index', compact('books', 'categories'));

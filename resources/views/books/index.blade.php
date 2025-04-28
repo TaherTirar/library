@@ -1,17 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h4>Books</h4>
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Books Collection</h4>
             @if(Auth::user()->role === 'admin')
-                <a href="{{ route('books.create') }}" class="btn btn-primary">Add New Book</a>
+                <a href="{{ route('books.create') }}" class="btn btn-primary btn-action">
+                    <i class="fas fa-plus"></i> Add New Book
+                </a>
             @endif
         </div>
 
-        <div class="card-body">
-            <form action="{{ route('books.index') }}" method="GET" class="mb-4">
-                <div class="row">
+        <div class="filters-container">
+            <form action="{{ route('books.index') }}" method="GET">
+                <div class="row g-3">
                     <div class="col-md-4">
                         <input type="text" name="search" class="form-control" placeholder="Search by title or author" value="{{ request('search') }}">
                     </div>
@@ -33,62 +35,54 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                     </div>
                 </div>
             </form>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Author</th>
-                            <th>Year</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($books as $book)
-                            <tr>
-                                <td>{{ $book->title }}</td>
-                                <td>{{ $book->author }}</td>
-                                <td>{{ $book->publication_year }}</td>
-                                <td>{{ $book->category->name }}</td>
-                                <td>
-                                    @if($book->status === 'available')
-                                        <span class="badge bg-success">Available</span>
-                                    @else
-                                        <span class="badge bg-danger">Borrowed</span>
-                                    @endif
-                                </td>
-                                <td class="d-flex">
-                                    <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-info me-2">View</a>
+        <div class="book-grid">
+            @forelse($books as $book)
+                <div class="book-card card">
+                    <div class="card-body">
+                        <h5 class="book-title">{{ $book->title }}</h5>
+                        <p class="book-author">by {{ $book->author }}</p>
+                        
+                        <div class="book-meta">
+                            <p class="mb-1"><i class="far fa-calendar-alt"></i> {{ $book->publication_year }}</p>
+                            <p class="mb-2"><i class="fas fa-bookmark"></i> {{ $book->category->name }}</p>
+                            
+                            @if($book->status === 'available')
+                                <span class="badge bg-success status-badge">Available</span>
+                            @else
+                                <span class="badge bg-danger status-badge">Borrowed</span>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer text-center">
+                        <a href="{{ route('books.show', $book) }}" class="btn btn-info btn-action">View</a>
 
-                                    @if(Auth::user()->role === 'admin')
-                                        <a href="{{ route('books.edit', $book) }}" class="btn btn-sm btn-warning me-2">Edit</a>
+                        @if(Auth::user()->role === 'admin')
+                            <a href="{{ route('books.edit', $book) }}" class="btn btn-warning btn-action">Edit</a>
+                            <form action="{{ route('books.destroy', $book) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-action" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
+                            </form>
+                        @elseif($book->status === 'available')
+                            <a href="{{ route('borrows.createWithBook', $book) }}" class="btn btn-success btn-action">Borrow</a>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="col-12 text-center">
+                    <p class="text-muted">No books found.</p>
+                </div>
+            @endforelse
+        </div>
 
-                                        <form action="{{ route('books.destroy', $book) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
-                                        </form>
-                                    @elseif($book->status === 'available')
-                                        <a href="{{ route('borrows.createWithBook', $book) }}" class="btn btn-sm btn-success">Borrow</a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center">No books found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
+        <div class="mt-4">
             {{ $books->appends(request()->query())->links() }}
         </div>
     </div>

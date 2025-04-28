@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('publication_year');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['available', 'borrowed'])->default('available');
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }
